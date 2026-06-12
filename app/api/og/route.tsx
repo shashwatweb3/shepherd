@@ -3,15 +3,45 @@ import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
+const TIER_LABELS: Record<string, string> = {
+  immortal: "Immortal Sheep 🛡️",
+  "mostly-alive": "Mostly Alive",
+  limping: "Limping Along",
+  "one-deploy": "One Deploy From Disaster",
+  "call-the-vet": "Call the Vet 💀",
+};
+
+const ROAST_LINES: Record<string, string> = {
+  immortal: "We have no notes. Annoyingly impressive.",
+  "mostly-alive": "Good shape. A few loose threads, but nothing's on fire.",
+  limping: "It runs. Barely. Like a three-legged sheep.",
+  "one-deploy": "One bad push from becoming someone else's problem.",
+  "call-the-vet": "The sheep has seen better days. Many better days.",
+};
+
+function getTier(score: number): string {
+  if (score >= 90) return "immortal";
+  if (score >= 70) return "mostly-alive";
+  if (score >= 50) return "limping";
+  if (score >= 30) return "one-deploy";
+  return "call-the-vet";
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const score = parseInt(searchParams.get("score") ?? "0", 10);
-  const repo = searchParams.get("repo") ?? "your-app";
+  const score = Math.min(100, Math.max(0, parseInt(searchParams.get("score") ?? "50", 10)));
+  const repo = (searchParams.get("repo") ?? "your-app").slice(0, 40);
+  const tier = getTier(score);
 
   const color =
     score >= 70 ? "#16A34A" : score >= 40 ? "#D97706" : "#DC2626";
-  const label =
-    score >= 70 ? "Healthy" : score >= 40 ? "At Risk" : "Critical";
+  const bgAccent =
+    score >= 70 ? "#F0FDF4" : score >= 40 ? "#FFFBEB" : "#FEF2F2";
+  const borderColor =
+    score >= 70 ? "#BBF7D0" : score >= 40 ? "#FDE68A" : "#FECACA";
+
+  const tierLabel = TIER_LABELS[tier] ?? tier;
+  const roastLine = ROAST_LINES[tier] ?? "";
 
   return new ImageResponse(
     (
@@ -19,81 +49,85 @@ export async function GET(req: NextRequest) {
         style={{
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
           width: "100%",
           height: "100%",
           background: "#FAFAF7",
           fontFamily: "sans-serif",
-          padding: "60px",
+          padding: "64px",
+          position: "relative",
         }}
       >
-        {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "40px" }}>
-          <span style={{ fontSize: "36px" }}>🐑</span>
-          <span style={{ fontSize: "28px", fontWeight: "700", color: "#111" }}>Shepherd</span>
-        </div>
-
-        {/* Score */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            background: "white",
-            border: "2px solid #E5E5E0",
-            borderRadius: "24px",
-            padding: "48px 80px",
-            marginBottom: "32px",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "100px",
-              fontWeight: "800",
-              color: color,
-              lineHeight: 1,
-            }}
-          >
-            {score}
+        {/* Top bar */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "48px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span style={{ fontSize: "40px" }}>🐑</span>
+            <span style={{ fontSize: "26px", fontWeight: "700", color: "#111", letterSpacing: "-0.5px" }}>Shepherd</span>
           </div>
-          <div style={{ fontSize: "32px", color: "#9CA3AF", marginTop: "4px" }}>/100</div>
-          <div
-            style={{
-              marginTop: "16px",
-              fontSize: "24px",
-              fontWeight: "600",
-              color: color,
-            }}
-          >
-            {label}
+          <div style={{ display: "flex", fontSize: "16px", color: "#9CA3AF" }}>
+            shepherd-ivory.vercel.app
           </div>
         </div>
 
-        {/* Repo */}
-        <div style={{ fontSize: "20px", color: "#6B7280", fontFamily: "monospace" }}>
-          {repo}
+        {/* Main content */}
+        <div style={{ display: "flex", flex: 1, gap: "48px", alignItems: "center" }}>
+          {/* Score circle */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "260px",
+              height: "260px",
+              borderRadius: "130px",
+              background: bgAccent,
+              border: `6px solid ${borderColor}`,
+              flexShrink: 0,
+            }}
+          >
+            <div style={{ display: "flex", fontSize: "88px", fontWeight: "800", color: color, lineHeight: 1 }}>
+              {score}
+            </div>
+            <div style={{ display: "flex", fontSize: "28px", color: "#9CA3AF", marginTop: "2px" }}>/100</div>
+          </div>
+
+          {/* Right side */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}>
+            <div
+              style={{
+                display: "flex",
+                background: bgAccent,
+                border: `2px solid ${borderColor}`,
+                borderRadius: "12px",
+                padding: "10px 20px",
+                width: "fit-content",
+              }}
+            >
+              <span style={{ fontSize: "20px", fontWeight: "700", color: color }}>{tierLabel}</span>
+            </div>
+            <div style={{ display: "flex", fontSize: "36px", fontWeight: "800", color: "#111", lineHeight: 1.2, letterSpacing: "-1px" }}>
+              Survival Score
+            </div>
+            <div style={{ display: "flex", fontSize: "20px", color: "#6B7280", fontFamily: "monospace" }}>
+              {repo}
+            </div>
+            <div style={{ display: "flex", fontSize: "20px", color: "#4B5563", marginTop: "8px", fontStyle: "italic" }}>
+              &ldquo;{roastLine}&rdquo;
+            </div>
+          </div>
         </div>
 
-        {/* Tagline */}
-        <div
-          style={{
-            marginTop: "32px",
-            fontSize: "18px",
-            color: "#9CA3AF",
-            textAlign: "center",
-          }}
-        >
-          My app&apos;s Survival Score: {score}/100 🐑
-        </div>
-        <div style={{ fontSize: "14px", color: "#C4C4C0", marginTop: "8px" }}>
-          shepherd.dev — You vibe-coded it. Shepherd keeps it alive.
+        {/* Footer */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "32px" }}>
+          <div style={{ display: "flex", fontSize: "16px", color: "#9CA3AF" }}>
+            You vibe-coded it. Shepherd keeps it alive.
+          </div>
+          <div style={{ display: "flex", fontSize: "16px", color: "#9CA3AF" }}>
+            Scan your repo free at shepherd-ivory.vercel.app/scan
+          </div>
         </div>
       </div>
     ),
-    {
-      width: 1200,
-      height: 630,
-    }
+    { width: 1200, height: 630 }
   );
 }
