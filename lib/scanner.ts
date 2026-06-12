@@ -501,14 +501,15 @@ export async function scanRepo(repoUrl: string): Promise<ScanResult> {
     .slice(0, 50);
 
   // Track per-file issues to avoid duplication
-  const authRateLimitFlagged = new Set<string>();
   const supabaseFlagged = new Set<string>();
   const corsStarFlagged = new Set<string>();
-  // Code-pattern checks: deduplicate globally (report once, first file wins)
+  // Code-pattern checks: deduplicate globally (report once, first non-test file wins)
   let evalFlagged = false;
   let sqlFlagged = false;
   let passwordFlagged = false;
   let jwtNoneFlagged = false;
+  let authRateLimitFlagged = false;
+  let consoleLogSensitiveFlagged = false;
 
   for (const file of filesToScan) {
     const content = await fetchFileContent(owner, repo, file.path);
@@ -564,8 +565,9 @@ export async function scanRepo(repoUrl: string): Promise<ScanResult> {
       });
     }
 
-    // console.log of sensitive vars
-    if (/console\.log\([^)]*(?:password|secret|token|key|auth)[^)]*\)/i.test(content)) {
+    // console.log of sensitive vars — deduplicate globally
+    if (!consoleLogSensitiveFlagged && !isTestFile(file.path) && /console\.log\([^)]*(?:password|secret|token|key|auth)[^)]*\)/i.test(content)) {
+      consoleLogSensitiveFlagged = true;
       issues.push({
         severity: "medium",
         category: "security",
@@ -591,9 +593,10 @@ export async function scanRepo(repoUrl: string): Promise<ScanResult> {
       });
     }
 
-    // Auth without rate limiting
+    // Auth without rate limiting — skip test files, deduplicate globally
     if (
-      !authRateLimitFlagged.has(file.path) &&
+      !authRateLimitFlagged &&
+      !isTestFile(file.path) &&
       (content.includes("/api/auth") || content.includes("signIn(") || /\blogin\b/i.test(content)) &&
       !content.includes("rateLimit") &&
       !content.includes("rate-limit") &&
@@ -602,7 +605,7 @@ export async function scanRepo(repoUrl: string): Promise<ScanResult> {
       !content.includes("express-rate-limit") &&
       !content.includes("limiter")
     ) {
-      authRateLimitFlagged.add(file.path);
+      authRateLimitFlagged = true;
       issues.push({
         severity: "medium",
         category: "auth",
