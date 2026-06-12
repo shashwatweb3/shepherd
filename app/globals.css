@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #FAFAF7;
+  --text: #111111;
+  --accent-green: #16A34A;
+  --accent-red: #DC2626;
+  --accent-yellow: #D97706;
+  --border: #E5E5E0;
+  --muted: #6B7280;
+}
+
+body {
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
