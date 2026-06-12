@@ -54,25 +54,14 @@ export default function WallPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]">
-      <nav className="border-b border-[#E5E5E0] px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-semibold text-[#111] text-lg">
-            <span>🐑</span>
-            <span>Shepherd</span>
-          </Link>
-          <Link href="/scan" className="bg-[#111] text-white px-4 py-2 rounded-md text-sm hover:bg-[#333] transition-colors">
-            Scan my app
-          </Link>
-        </div>
-      </nav>
 
       <div className="max-w-3xl mx-auto px-6 py-16">
         <div className="mb-12">
           <div className="mb-6">
             <DevShepherd size={100} />
           </div>
-          <p className="text-xs uppercase tracking-widest text-[#9CA3AF] mb-3 font-medium">Community</p>
-          <h1 className="text-3xl font-bold text-[#111] mb-3">Wall of Shame... I mean, Fame</h1>
+          <p className="eyebrow mb-3">Community</p>
+          <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink mb-3">Wall of Shame... I mean, Fame</h1>
           <p className="text-[#6B7280]">
             Anonymous scores from recent scans. Repos are hidden. Only vibes are shown.
             <br />

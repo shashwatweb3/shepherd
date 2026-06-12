@@ -4,29 +4,216 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import Hero from "@/components/Hero";
+import VibeSheep from "@/components/mascots/VibeSheep";
+import { TIERS } from "@/lib/tiers";
 
-function RevealSection({ children }: { children: React.ReactNode }) {
+function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
-  const prefersReduced = useReducedMotion();
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const reduced = useReducedMotion();
   return (
     <motion.div
       ref={ref}
-      initial={prefersReduced ? {} : { opacity: 0, y: 32 }}
+      initial={reduced ? {} : { opacity: 0, y: 24 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.5, delay, ease: "easeOut" }}
     >
       {children}
     </motion.div>
   );
 }
 
-export default function Home() {
+/* ---------------- Doom Loop (night section) ---------------- */
+
+const LOOP_STEPS = [
+  "ask AI to fix the bug",
+  "AI breaks two other things",
+  "ask AI to fix those",
+  "the original bug returns",
+];
+
+function DoomLoop() {
+  return (
+    <section className="bg-night text-cream">
+      <div className="mx-auto grid max-w-6xl gap-12 px-5 py-24 sm:px-8 lg:grid-cols-2 lg:items-center">
+        <div>
+          <p className="font-mono text-sm text-[#4ADE80]">
+            <span className="opacity-60">$ </span>the-problem
+          </p>
+          <h2 className="mt-5 font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+            Night falls on every
+            <br />
+            vibe-coded app.
+          </h2>
+          <p className="mt-6 max-w-md text-lg leading-relaxed text-[#A8BBB0]">
+            You shipped fast. It worked. Then something broke — and every AI
+            &ldquo;fix&rdquo; broke something else. Now you&apos;re afraid to touch your own
+            product.
+          </p>
+          <p className="mt-4 max-w-md text-lg font-semibold text-cream">
+            That&apos;s the doom loop. Shepherd is the way out.
+          </p>
+        </div>
+
+        {/* the loop, drawn as an actual loop (circle on sm+, vertical cycle on mobile) */}
+        <Reveal>
+          {/* mobile: vertical cycle */}
+          <div className="sm:hidden">
+            <div className="mx-auto flex max-w-[300px] flex-col items-center gap-2">
+              {LOOP_STEPS.map((step) => (
+                <div key={step} className="w-full">
+                  <div className="rounded-xl border border-[#2A3A32] bg-night-soft px-4 py-3 text-center font-mono text-xs text-[#C9D6CE]">
+                    {step}
+                  </div>
+                  <div className="py-1 text-center font-mono text-sm text-danger" aria-hidden="true">
+                    ↓
+                  </div>
+                </div>
+              ))}
+              <div className="rounded-xl border border-danger/40 bg-danger/10 px-4 py-2 text-center font-mono text-xs text-[#FF7B72]">
+                ↺ back to step 1, forever
+              </div>
+              <div className="mt-4 text-center">
+                <VibeSheep mood="critical" size={96} />
+                <p className="mt-1 font-mono text-[11px] text-[#5E7268]">vibe, stuck in the loop</p>
+              </div>
+            </div>
+          </div>
+
+          {/* sm+: the circle */}
+          <div className="relative mx-auto hidden aspect-square w-full max-w-[400px] sm:block">
+            {/* circle */}
+            <svg viewBox="0 0 400 400" className="absolute inset-0 h-full w-full" aria-hidden="true">
+              <circle
+                cx="200"
+                cy="200"
+                r="150"
+                fill="none"
+                stroke="#22302A"
+                strokeWidth="2"
+                strokeDasharray="6 8"
+              />
+              {/* arrowhead showing direction */}
+              <path d="M200 44 L212 54 L200 64 Z" fill="#DC2626" transform="rotate(14 200 200)" />
+            </svg>
+            {/* steps placed around the circle */}
+            {LOOP_STEPS.map((step, i) => {
+              const angle = (i / LOOP_STEPS.length) * 2 * Math.PI - Math.PI / 2;
+              const x = 50 + 43 * Math.cos(angle);
+              const y = 50 + 43 * Math.sin(angle);
+              return (
+                <div
+                  key={step}
+                  className="absolute w-[150px] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-[#2A3A32] bg-night-soft px-3 py-2.5 text-center font-mono text-xs leading-snug text-[#C9D6CE]"
+                  style={{ left: `${x}%`, top: `${y}%` }}
+                >
+                  {step}
+                </div>
+              );
+            })}
+            {/* center: poor Vibe */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+              <VibeSheep mood="critical" size={104} />
+              <p className="mt-1 font-mono text-[11px] text-[#5E7268]">vibe, stuck in the loop</p>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- How it works (numbered trail) ---------------- */
+
+const STEPS = [
+  { n: "01", name: "paste", desc: "Drop in any public GitHub repo URL. No login, no install, no GitHub app." },
+  { n: "02", name: "scan", desc: "142 static checks run against your real files — secrets, auth, CORS, CVEs, git history." },
+  { n: "03", name: "score", desc: "One Survival Score, 0–100, with evidence: file, line, and a redacted excerpt for every finding." },
+  { n: "04", name: "fix", desc: "Copy the full report as markdown and paste it into Cursor, Lovable, or Claude: \u201cfix all of this.\u201d" },
+  { n: "05", name: "re-scan", desc: "Push, scan again, watch the score climb. Your flock history is saved on this device." },
+];
+
+function Trail() {
+  return (
+    <section className="mx-auto max-w-6xl px-5 py-24 sm:px-8">
+      <Reveal>
+        <p className="eyebrow">how-it-works</p>
+        <h2 className="mt-5 max-w-xl font-display text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">
+          Five steps. No jargon. No 900-line explanation.
+        </h2>
+      </Reveal>
+
+      <div className="relative mt-14">
+        {/* the trail line */}
+        <div
+          aria-hidden="true"
+          className="absolute bottom-6 left-[19px] top-6 w-px border-l-2 border-dashed border-wool-line lg:bottom-auto lg:left-6 lg:right-6 lg:top-[19px] lg:h-px lg:w-auto lg:border-l-0 lg:border-t-2"
+        />
+        <ol className="relative grid gap-10 lg:grid-cols-5 lg:gap-6">
+          {STEPS.map(({ n, name, desc }, i) => (
+            <Reveal key={n} delay={i * 0.07}>
+              <li className="flex gap-5 lg:block">
+                <span className="z-10 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-pasture font-mono text-sm font-bold text-white shadow-lift">
+                  {n}
+                </span>
+                <div className="lg:mt-5">
+                  <h3 className="font-display text-xl font-bold text-ink">{name}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">{desc}</p>
+                </div>
+              </li>
+            </Reveal>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- Tier ruler ---------------- */
+
+const TIER_RANGES = ["90–100", "70–89", "50–69", "30–49", "0–29"];
+const TIER_LIST = Object.values(TIERS);
+
+function TierRuler() {
+  return (
+    <section className="border-y border-wool-line bg-wool/50">
+      <div className="mx-auto max-w-6xl px-5 py-24 sm:px-8">
+        <Reveal>
+          <p className="eyebrow">score-tiers</p>
+          <h2 className="mt-5 font-display text-4xl font-extrabold tracking-tight text-ink sm:text-5xl">
+            Where does your app land?
+          </h2>
+        </Reveal>
+
+        <div className="mt-12 overflow-hidden rounded-2xl border-2 border-ink bg-cream shadow-card">
+          {TIER_LIST.map((tier, i) => (
+            <Reveal key={tier.label} delay={i * 0.06}>
+              <div
+                className={`grid grid-cols-[64px_56px_1fr] items-center gap-4 px-4 py-4 sm:grid-cols-[90px_64px_240px_1fr] sm:px-6 ${
+                  i > 0 ? "border-t border-wool-line" : ""
+                }`}
+              >
+                <span className="font-mono text-xs text-ink-faint">{TIER_RANGES[i]}</span>
+                <VibeSheep mood={tier.mood} size={56} />
+                <span className="font-display text-base font-bold sm:text-lg" style={{ color: tier.color }}>
+                  {tier.label}
+                </span>
+                <span className="col-span-3 text-sm text-ink-soft sm:col-span-1">{tier.roast}</span>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- Why free + signup ---------------- */
+
+function WhyFree() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [sheepHop, setSheepHop] = useState(false);
-  const prefersReduced = useReducedMotion();
 
   async function handleNotify(e: React.FormEvent) {
     e.preventDefault();
@@ -38,7 +225,7 @@ export default function Home() {
         body: JSON.stringify({ email }),
       });
     } catch {
-      // always succeed
+      // succeed anyway
     } finally {
       setSubmitted(true);
       setLoading(false);
@@ -46,201 +233,94 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF7]">
-      {/* Subtle dot-grid background */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          backgroundImage: "radial-gradient(circle, #d1d1cc 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-          opacity: 0.4,
-        }}
-        aria-hidden
-      />
+    <section className="mx-auto grid max-w-6xl gap-12 px-5 py-24 sm:px-8 lg:grid-cols-2">
+      <Reveal>
+        <p className="eyebrow">why-free</p>
+        <h2 className="mt-5 font-display text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">
+          Because watching apps explode in production makes us sad.
+        </h2>
+        <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-soft">
+          We&apos;re building in public. No account, no credit card, no free tier
+          that dies after 5 scans. Paste a URL, get your score, fix your app,
+          you menace.
+        </p>
+      </Reveal>
 
-      {/* Nav */}
-      <nav className="relative border-b border-[#E5E5E0] px-6 py-4 bg-[#FAFAF7]/90 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-semibold text-[#111] text-lg">
-            <motion.span
-              animate={sheepHop && !prefersReduced ? { y: [-4, 0] } : {}}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              onMouseEnter={() => { setSheepHop(true); setTimeout(() => setSheepHop(false), 400); }}
-              style={{ display: "inline-block", cursor: "default" }}
-            >
-              🐑
-            </motion.span>
-            <span>Shepherd</span>
-          </Link>
-          <div className="flex items-center gap-4 text-sm text-[#6B7280]">
-            <Link href="/wall" className="hover:text-[#111] transition-colors hidden sm:block">Wall of Fame</Link>
-            <Link href="/report/demo" className="hover:text-[#111] transition-colors hidden sm:block">Sample Report</Link>
-            <Link href="/docs" className="hover:text-[#111] transition-colors hidden sm:block">Docs</Link>
-            <motion.div whileHover={prefersReduced ? {} : { scale: 1.03 }} whileTap={prefersReduced ? {} : { scale: 0.97 }}>
-              <Link
-                href="/scan"
-                className="bg-[#111] text-white px-4 py-2 rounded-md hover:bg-[#333] transition-colors"
+      <Reveal delay={0.1}>
+        <div className="rounded-2xl border-2 border-ink bg-cream p-6 shadow-card sm:p-8">
+          <h3 className="font-display text-xl font-bold text-ink">
+            Get a ping when Shepherd learns new tricks
+          </h3>
+          <p className="mt-2 text-sm text-ink-soft">
+            Optional. New checks, new features, nothing else.
+          </p>
+          {submitted ? (
+            <div className="mt-6 flex items-center gap-3 rounded-xl border border-pasture/30 bg-pasture/10 px-4 py-3">
+              <VibeSheep mood="happy" size={40} />
+              <span className="text-sm font-medium text-pasture-deep">
+                You&apos;re in the flock. We&apos;ll only email when it&apos;s worth it.
+              </span>
+            </div>
+          ) : (
+            <form onSubmit={handleNotify} className="mt-6 flex gap-3">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="min-w-0 flex-1 rounded-xl border-2 border-wool-line bg-white px-4 py-3 font-mono text-sm transition-colors focus:border-ink focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="rounded-xl border-2 border-ink bg-ink px-5 py-3 font-display text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-pasture disabled:opacity-50 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
               >
-                Scan my app
-              </Link>
-            </motion.div>
-          </div>
+                {loading ? "..." : "Notify me"}
+              </button>
+            </form>
+          )}
         </div>
-      </nav>
+      </Reveal>
+    </section>
+  );
+}
 
-      {/* Hero */}
+/* ---------------- Final CTA ---------------- */
+
+function FinalCta() {
+  return (
+    <section className="bg-night">
+      <div className="mx-auto flex max-w-6xl flex-col items-center px-5 py-20 text-center sm:px-8">
+        <VibeSheep mood="scanning" size={120} />
+        <h2 className="mt-6 font-display text-3xl font-extrabold tracking-tight text-cream sm:text-4xl">
+          Your repo already knows its score.
+        </h2>
+        <p className="mt-3 font-mono text-sm text-[#5E7268]">
+          ~10 seconds. nothing stored. only your ego at risk.
+        </p>
+        <Link
+          href="/scan"
+          className="mt-8 rounded-xl border-2 border-cream bg-pasture px-8 py-4 font-display text-lg font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_5px_0_0_#FAF8F2] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+        >
+          Find out →
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- Page ---------------- */
+
+export default function Home() {
+  return (
+    <main>
       <Hero />
-
-      {/* Doom Loop */}
-      <section className="bg-white border-y border-[#E5E5E0] py-20">
-        <div className="max-w-5xl mx-auto px-6">
-          <RevealSection>
-            <div className="max-w-2xl">
-              <p className="text-xs uppercase tracking-widest text-[#9CA3AF] mb-4 font-medium">The Problem</p>
-              <h2 className="text-3xl font-bold text-[#111] mb-6">The Doom Loop</h2>
-              <p className="text-lg text-[#4B5563] mb-5 leading-relaxed">
-                You ship fast with AI. It works. Then something breaks. You ask AI to fix it — and it fixes it,
-                but now three other things are broken. You fix those. Something else breaks.
-              </p>
-              <p className="text-lg text-[#4B5563] mb-5 leading-relaxed">
-                Eventually, you&apos;re afraid to touch the codebase. Every change is a gamble.
-                You have live users and no idea what&apos;s holding the whole thing together.
-              </p>
-              <p className="text-lg font-semibold text-[#111]">
-                That&apos;s the doom loop. Shepherd is the way out.
-              </p>
-            </div>
-          </RevealSection>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="py-20">
-        <div className="max-w-5xl mx-auto px-6">
-          <RevealSection>
-            <p className="text-xs uppercase tracking-widest text-[#9CA3AF] mb-4 font-medium text-center">How it works</p>
-            <h2 className="text-3xl font-bold text-[#111] mb-16 text-center">Five steps to a healthy app</h2>
-          </RevealSection>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
-            {[
-              { icon: "🔗", step: "Connect", desc: "Paste your GitHub repo URL" },
-              { icon: "🗺️", step: "Map", desc: "We crawl the file tree" },
-              { icon: "🔍", step: "Audit", desc: "30+ checks run instantly" },
-              { icon: "🔧", step: "Fix", desc: "Copy-paste fix instructions" },
-              { icon: "📡", step: "Monitor", desc: "Re-scan after every push" },
-            ].map(({ icon, step, desc }) => (
-              <RevealSection key={step}>
-                <motion.div
-                  className="text-center"
-                  whileHover={prefersReduced ? {} : { y: -4 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <div className="text-3xl mb-3">{icon}</div>
-                  <div className="font-semibold text-[#111] mb-1">{step}</div>
-                  <div className="text-sm text-[#6B7280] leading-relaxed">{desc}</div>
-                </motion.div>
-              </RevealSection>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Why free */}
-      <section className="bg-white border-y border-[#E5E5E0] py-20">
-        <div className="max-w-5xl mx-auto px-6">
-          <RevealSection>
-            <div className="max-w-2xl mx-auto text-center">
-              <p className="text-xs uppercase tracking-widest text-[#9CA3AF] mb-4 font-medium">Why is this free?</p>
-              <h2 className="text-3xl font-bold text-[#111] mb-6">Because watching vibe-coded apps explode in production makes us sad.</h2>
-              <p className="text-lg text-[#4B5563] leading-relaxed">
-                Also we&apos;re building in public. Scan as many repos as you want, you menace. No account,
-                no credit card, no &ldquo;free tier&rdquo; that runs out after 5 scans.
-                Just paste a URL and get your score.
-              </p>
-            </div>
-          </RevealSection>
-        </div>
-      </section>
-
-      {/* Score tiers */}
-      <section className="py-20">
-        <div className="max-w-5xl mx-auto px-6">
-          <RevealSection>
-            <p className="text-xs uppercase tracking-widest text-[#9CA3AF] mb-4 font-medium text-center">Score tiers</p>
-            <h2 className="text-3xl font-bold text-[#111] mb-12 text-center">Where does your app land?</h2>
-          </RevealSection>
-          <div className="max-w-2xl mx-auto space-y-3">
-            {[
-              { range: "90–100", label: "Immortal Sheep 🛡️", color: "#16A34A", bg: "#F0FDF4", border: "#BBF7D0", desc: "We have no notes. Annoyingly impressive." },
-              { range: "70–89", label: "Mostly Alive", color: "#16A34A", bg: "#F0FDF4", border: "#BBF7D0", desc: "Good shape. A few loose threads, but nothing's on fire." },
-              { range: "50–69", label: "Limping Along", color: "#D97706", bg: "#FFFBEB", border: "#FDE68A", desc: "It runs. Barely. Like a three-legged sheep." },
-              { range: "30–49", label: "One Deploy From Disaster", color: "#DC2626", bg: "#FEF2F2", border: "#FECACA", desc: "One bad push from becoming someone else's problem." },
-              { range: "0–29", label: "Call the Vet 💀", color: "#DC2626", bg: "#FEF2F2", border: "#FECACA", desc: "The sheep has seen better days. Many better days." },
-            ].map(({ range, label, color, bg, border, desc }) => (
-              <RevealSection key={range}>
-                <div className="flex items-center gap-4 p-4 rounded-xl border" style={{ background: bg, borderColor: border }}>
-                  <div className="w-16 text-center font-mono text-xs text-[#9CA3AF] flex-shrink-0">{range}</div>
-                  <div className="font-semibold text-sm flex-shrink-0 w-48" style={{ color }}>{label}</div>
-                  <div className="text-sm text-[#6B7280]">{desc}</div>
-                </div>
-              </RevealSection>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Notification signup */}
-      <section className="bg-white border-y border-[#E5E5E0] py-20">
-        <div className="max-w-xl mx-auto px-6 text-center">
-          <RevealSection>
-            <h2 className="text-2xl font-bold text-[#111] mb-3">Get notified when Shepherd learns new tricks</h2>
-            <p className="text-[#6B7280] mb-8 text-sm">
-              Optional. No spam. Just a note when we add new checks, improvements, or actually important stuff.
-            </p>
-            {submitted ? (
-              <div className="bg-[#F0FDF4] border border-[#BBF7D0] text-[#16A34A] rounded-lg px-6 py-4 font-medium">
-                You&apos;re in the flock. 🐑 We&apos;ll only email when it&apos;s worth it.
-              </div>
-            ) : (
-              <form onSubmit={handleNotify} className="flex gap-3">
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="flex-1 border border-[#E5E5E0] rounded-md px-4 py-3 text-sm bg-[#FAFAF7] focus:outline-none focus:border-[#111] transition-colors"
-                />
-                <motion.button
-                  type="submit"
-                  disabled={loading}
-                  whileHover={prefersReduced ? {} : { scale: 1.03 }}
-                  whileTap={prefersReduced ? {} : { scale: 0.97 }}
-                  className="bg-[#111] text-white px-5 py-3 rounded-md text-sm font-medium hover:bg-[#333] transition-colors disabled:opacity-50 whitespace-nowrap"
-                >
-                  {loading ? "..." : "Notify me"}
-                </motion.button>
-              </form>
-            )}
-          </RevealSection>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-[#E5E5E0] py-8 relative">
-        <div className="max-w-5xl mx-auto px-6 flex items-center justify-between text-sm text-[#9CA3AF]">
-          <div className="flex items-center gap-2">
-            <span>🐑</span>
-            <span>Shepherd</span>
-          </div>
-          <div className="flex items-center gap-6">
-            <Link href="/scan" className="hover:text-[#111] transition-colors">Scan</Link>
-            <Link href="/wall" className="hover:text-[#111] transition-colors">Wall of Fame</Link>
-            <Link href="/report/demo" className="hover:text-[#111] transition-colors">Sample Report</Link>
-            <Link href="/docs" className="hover:text-[#111] transition-colors">Docs</Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+      <DoomLoop />
+      <Trail />
+      <TierRuler />
+      <WhyFree />
+      <FinalCta />
+    </main>
   );
 }

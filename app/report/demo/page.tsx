@@ -42,31 +42,20 @@ export default function DemoReport() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]">
-      <nav className="border-b border-[#E5E5E0] px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-semibold text-[#111] text-lg">
-            <span>🐑</span>
-            <span>Shepherd</span>
-          </Link>
-          <Link href="/scan" className="bg-[#111] text-white px-4 py-2 rounded-md text-sm hover:bg-[#333] transition-colors">
-            Scan my app
-          </Link>
-        </div>
-      </nav>
 
       <div className="max-w-2xl mx-auto px-6 py-16">
         <div className="inline-flex items-center gap-2 bg-[#F0FDF4] text-[#16A34A] text-xs font-medium px-3 py-1 rounded-full border border-[#BBF7D0] mb-6">
           Sample Report — myapp/backend
         </div>
 
-        <h1 className="text-3xl font-bold text-[#111] mb-1">Weekly Founder Report</h1>
+        <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink mb-1">Weekly Founder Report</h1>
         <p className="text-sm text-[#9CA3AF] mb-10">Week of June 9–16, 2025</p>
 
         {/* Score */}
         <div className="bg-white border border-[#E5E5E0] rounded-xl p-8 mb-5 flex items-center gap-6">
           <div className="w-24 h-24 rounded-full flex items-center justify-center border-4 border-[#16A34A] flex-shrink-0">
             <div className="text-center">
-              <div className="text-3xl font-bold text-[#111]">92</div>
+              <div className="font-display text-4xl font-extrabold tracking-tight text-ink">92</div>
               <div className="text-xs text-[#6B7280]">/100</div>
             </div>
           </div>

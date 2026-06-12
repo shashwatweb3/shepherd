@@ -157,27 +157,12 @@ export default function DocsPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF7]">
-      {/* Nav */}
-      <nav className="border-b border-[#E5E5E0] px-6 py-4 sticky top-0 bg-[#FAFAF7]/90 backdrop-blur-sm z-50">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-semibold text-[#111] text-lg">
-            <span>🐑</span>
-            <span>Shepherd</span>
-          </Link>
-          <div className="flex items-center gap-4 text-sm text-[#6B7280]">
-            <Link href="/wall" className="hover:text-[#111] transition-colors hidden sm:block">Wall of Fame</Link>
-            <Link href="/scan" className="bg-[#111] text-white px-4 py-2 rounded-md hover:bg-[#333] transition-colors">
-              Scan my app
-            </Link>
-          </div>
-        </div>
-      </nav>
 
       <div className="max-w-5xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="mb-12">
-          <p className="text-xs uppercase tracking-widest text-[#9CA3AF] mb-3 font-medium">Documentation</p>
-          <h1 className="text-3xl font-bold text-[#111] mb-3">How Shepherd works</h1>
+          <p className="eyebrow mb-3">Documentation</p>
+          <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink mb-3">How Shepherd works</h1>
           <p className="text-[#6B7280] max-w-xl">
             Everything about the scan pipeline, scoring formula, rule catalog, and what we can and can&apos;t detect.
           </p>

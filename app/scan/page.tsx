@@ -321,22 +321,10 @@ export default function ScanPage() {
         aria-hidden
       />
 
-      {/* Nav */}
-      <nav className="relative border-b border-[#E5E5E0] px-6 py-4 bg-[#FAFAF7]/90 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-semibold text-[#111]">
-            <VibeSheep mood="happy" size={34} /> Shepherd
-          </Link>
-          <Link href="/wall" className="text-sm text-[#6B7280] hover:text-[#111] transition-colors">
-            Wall of Fame
-          </Link>
-        </div>
-      </nav>
-
       <div className="relative max-w-2xl mx-auto px-6 py-14">
         {/* Input */}
         <div className="mb-10">
-          <h1 className="text-3xl font-bold text-[#111] mb-2">Survival Scan</h1>
+          <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink mb-2">Survival Scan</h1>
           <p className="text-[#6B7280] mb-8">
             Paste any public GitHub repo URL. We run 30+ checks and give it a Survival Score.
             No login. No limits. Don&apos;t say we never gave you anything.

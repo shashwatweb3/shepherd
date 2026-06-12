@@ -7,7 +7,7 @@ export default function NotFound() {
       <div className="mb-6">
         <VibeSheep mood="sleeping" size={160} />
       </div>
-      <h1 className="text-3xl font-bold text-[#111] mb-3">This page wandered off.</h1>
+      <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink mb-3">This page wandered off.</h1>
       <p className="text-[#6B7280] mb-8 max-w-sm">
         We&apos;ll send a dog. In the meantime, there&apos;s nothing dangerous about going back home.
       </p>
