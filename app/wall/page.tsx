@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { TIER_COLORS, type ScoreTier } from "@/lib/scanner";
+import { TIER_COLORS, type ScoreTier } from "@/lib/tiers";
+import DevShepherd from "@/components/mascots/DevShepherd";
 
 interface WallEntry {
   id: string;
@@ -67,6 +68,9 @@ export default function WallPage() {
 
       <div className="max-w-3xl mx-auto px-6 py-16">
         <div className="mb-12">
+          <div className="mb-6">
+            <DevShepherd size={100} />
+          </div>
           <p className="text-xs uppercase tracking-widest text-[#9CA3AF] mb-3 font-medium">Community</p>
           <h1 className="text-3xl font-bold text-[#111] mb-3">Wall of Shame... I mean, Fame</h1>
           <p className="text-[#6B7280]">

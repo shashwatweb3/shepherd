@@ -1,3 +1,9 @@
+// Single source of truth for tiers — imported for use in this file, re-exported for consumers
+import type { ScoreTier } from "@/lib/tiers";
+import { getTier, TIER_LABELS, TIER_COLORS } from "@/lib/tiers";
+export type { ScoreTier };
+export { getTier, TIER_LABELS, TIER_COLORS };
+
 export type IssueSeverity = "critical" | "medium" | "low";
 
 export interface Issue {
@@ -27,37 +33,6 @@ export interface ScanResult {
   scannedAt: string;
   filesChecked: number;
 }
-
-export type ScoreTier =
-  | "immortal"    // 90–100
-  | "mostly-alive"   // 70–89
-  | "limping"        // 50–69
-  | "one-deploy"     // 30–49
-  | "call-the-vet";  // 0–29
-
-export function getTier(score: number): ScoreTier {
-  if (score >= 90) return "immortal";
-  if (score >= 70) return "mostly-alive";
-  if (score >= 50) return "limping";
-  if (score >= 30) return "one-deploy";
-  return "call-the-vet";
-}
-
-export const TIER_LABELS: Record<ScoreTier, string> = {
-  "immortal": "Immortal Sheep 🛡️",
-  "mostly-alive": "Mostly Alive",
-  "limping": "Limping Along",
-  "one-deploy": "One Deploy From Disaster",
-  "call-the-vet": "Call the Vet 💀",
-};
-
-export const TIER_COLORS: Record<ScoreTier, string> = {
-  "immortal": "#16A34A",
-  "mostly-alive": "#16A34A",
-  "limping": "#D97706",
-  "one-deploy": "#DC2626",
-  "call-the-vet": "#DC2626",
-};
 
 // ── Secret patterns ────────────────────────────────────────────────────────────
 interface SecretPattern {

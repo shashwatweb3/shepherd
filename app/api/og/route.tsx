@@ -1,31 +1,8 @@
 import { ImageResponse } from "@vercel/og";
 import { NextRequest } from "next/server";
+import { getTier, TIERS } from "@/lib/tiers";
 
 export const runtime = "edge";
-
-const TIER_LABELS: Record<string, string> = {
-  immortal: "Immortal Sheep 🛡️",
-  "mostly-alive": "Mostly Alive",
-  limping: "Limping Along",
-  "one-deploy": "One Deploy From Disaster",
-  "call-the-vet": "Call the Vet 💀",
-};
-
-const ROAST_LINES: Record<string, string> = {
-  immortal: "We have no notes. Annoyingly impressive.",
-  "mostly-alive": "Good shape. A few loose threads, but nothing's on fire.",
-  limping: "It runs. Barely. Like a three-legged sheep.",
-  "one-deploy": "One bad push from becoming someone else's problem.",
-  "call-the-vet": "The sheep has seen better days. Many better days.",
-};
-
-function getTier(score: number): string {
-  if (score >= 90) return "immortal";
-  if (score >= 70) return "mostly-alive";
-  if (score >= 50) return "limping";
-  if (score >= 30) return "one-deploy";
-  return "call-the-vet";
-}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -40,8 +17,8 @@ export async function GET(req: NextRequest) {
   const borderColor =
     score >= 70 ? "#BBF7D0" : score >= 40 ? "#FDE68A" : "#FECACA";
 
-  const tierLabel = TIER_LABELS[tier] ?? tier;
-  const roastLine = ROAST_LINES[tier] ?? "";
+  const tierLabel = TIERS[tier].label;
+  const roastLine = TIERS[tier].roast;
 
   return new ImageResponse(
     (

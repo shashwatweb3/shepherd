@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ScanResult, Issue, IssueSeverity, ScoreTier, TIER_LABELS, TIER_COLORS } from "@/lib/scanner";
+import VibeSheep from "@/components/mascots/VibeSheep";
 
 // ── Scanning status lines ──────────────────────────────────────────────────────
 const SCAN_LINES = [
@@ -324,7 +325,7 @@ export default function ScanPage() {
       <nav className="relative border-b border-[#E5E5E0] px-6 py-4 bg-[#FAFAF7]/90 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-[#111]">
-            <span>🐑</span> Shepherd
+            <VibeSheep mood="happy" size={34} /> Shepherd
           </Link>
           <Link href="/wall" className="text-sm text-[#6B7280] hover:text-[#111] transition-colors">
             Wall of Fame
@@ -393,7 +394,7 @@ export default function ScanPage() {
 
               {/* Status line */}
               <div className="flex items-center gap-3">
-                <span className="w-5 h-5 border-2 border-[#16A34A] border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                <VibeSheep mood="scanning" size={40} className="flex-shrink-0" />
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={scanLineIndex}
@@ -565,7 +566,7 @@ export default function ScanPage() {
         {history.length > 0 && state !== "done" && (
           <div className="mt-10">
             <h3 className="text-sm font-semibold text-[#111] mb-4 flex items-center gap-2">
-              <span>🐑</span> Your Flock <span className="text-[#9CA3AF] font-normal">(recent scans)</span>
+              <VibeSheep mood="sleeping" size={28} /> Your Flock <span className="text-[#9CA3AF] font-normal">(recent scans)</span>
             </h3>
             <ul className="space-y-2">
               {history.map((h) => {
