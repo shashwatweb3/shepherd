@@ -184,17 +184,17 @@ const SECRET_PATTERNS: SecretPattern[] = [
 ];
 
 // ── Deprecated / abandoned packages ───────────────────────────────────────────
-const DEPRECATED_PACKAGES: { name: string; reason: string; replacement?: string }[] = [
-  { name: "event-stream", reason: "supply-chain compromised (2018)", replacement: "N/A — remove it" },
-  { name: "flatmap-stream", reason: "malicious package (2018)" },
-  { name: "colors", reason: "author intentionally sabotaged it (2022)", replacement: "chalk or kleur" },
-  { name: "node-ipc", reason: "author added destructive payload (2022)", replacement: "N/A — remove it" },
-  { name: "request", reason: "deprecated since 2020, no security patches", replacement: "node-fetch, axios, or native fetch" },
-  { name: "moment", reason: "deprecated, 300KB bundle size", replacement: "date-fns or dayjs" },
-  { name: "lodash", reason: "often misused as full import (+70KB)", replacement: "import specific functions: lodash/get" },
-  { name: "crypto-js", reason: "slow, outdated, use built-in Node crypto instead", replacement: "Node.js built-in `crypto`" },
-  { name: "node-uuid", reason: "deprecated — use uuid instead", replacement: "uuid or crypto.randomUUID()" },
-  { name: "bcrypt", reason: "native bindings can break across Node versions", replacement: "bcryptjs (pure JS) or argon2" },
+// severity: "critical" = actively malicious/compromised, "medium" = abandoned/unsafe, "low" = best replaced
+const DEPRECATED_PACKAGES: { name: string; reason: string; replacement?: string; severity: IssueSeverity }[] = [
+  { name: "event-stream", reason: "supply-chain compromised (2018)", replacement: "N/A — remove it", severity: "critical" },
+  { name: "flatmap-stream", reason: "malicious package (2018)", severity: "critical" },
+  { name: "colors", reason: "author intentionally sabotaged it (2022)", replacement: "chalk or kleur", severity: "critical" },
+  { name: "node-ipc", reason: "author added destructive payload (2022)", replacement: "N/A — remove it", severity: "critical" },
+  { name: "request", reason: "deprecated since 2020, no security patches", replacement: "node-fetch, axios, or native fetch", severity: "medium" },
+  { name: "moment", reason: "deprecated, 300KB bundle size, no tree-shaking", replacement: "date-fns or dayjs", severity: "low" },
+  { name: "lodash", reason: "full import adds ~70KB; most functions are in modern JS", replacement: "import specific functions: lodash/get, or use native JS", severity: "low" },
+  { name: "crypto-js", reason: "slow and outdated; use Node.js built-in crypto", replacement: "Node.js built-in `crypto`", severity: "medium" },
+  { name: "node-uuid", reason: "deprecated — use uuid instead", replacement: "uuid or crypto.randomUUID()", severity: "low" },
 ];
 
 // ── Boilerplate signatures ─────────────────────────────────────────────────────
@@ -419,13 +419,18 @@ export async function scanRepo(repoUrl: string): Promise<ScanResult> {
       }
 
       // Deprecated/abandoned packages
-      for (const { name, reason, replacement } of DEPRECATED_PACKAGES) {
+      for (const { name, reason, replacement, severity: depSev } of DEPRECATED_PACKAGES) {
         if (allDeps[name]) {
+          const roasts: Record<IssueSeverity, string> = {
+            critical: `You're using ${name}. This one is actually dangerous.`,
+            medium: `${name} is past its expiry date. Time to upgrade.`,
+            low: `${name} works, but there are better options now.`,
+          };
           issues.push({
-            severity: "critical",
+            severity: depSev,
             category: "dependencies",
-            title: `Dangerous or deprecated package: ${name}`,
-            roast: `You're using ${name}. That's a choice.`,
+            title: `${depSev === "critical" ? "Dangerous" : "Deprecated"} package: ${name}`,
+            roast: roasts[depSev],
             description: `"${name}" is flagged: ${reason}.`,
             fix: replacement
               ? `Replace with: ${replacement}\nRun: npm uninstall ${name} && npm install ${replacement.split(" or ")[0].trim()}`
@@ -481,6 +486,16 @@ export async function scanRepo(repoUrl: string): Promise<ScanResult> {
   // ── Source file scanning ──────────────────────────────────────────────────────
   const sourceExtensions = /\.(ts|tsx|js|jsx|mjs|cjs|py|rb|go|php|java|env\.example|sql)$/;
   const skipDirs = /^(node_modules|\.git|\.next|dist|build|out|vendor)\//;
+  // Test/fixture files: skip code-pattern checks (not secret checks) to reduce false positives
+  const isTestFile = (p: string) =>
+    /\.(test|spec)\.[jt]sx?$/.test(p) ||
+    p.includes("__tests__") ||
+    p.includes("/test/") ||
+    p.includes("/tests/") ||
+    p.includes("/fixtures/") ||
+    p.includes("/examples/") ||
+    p.includes("/e2e/");
+
   const filesToScan = files
     .filter((f) => sourceExtensions.test(f.path) && !skipDirs.test(f.path))
     .slice(0, 50);
@@ -489,6 +504,11 @@ export async function scanRepo(repoUrl: string): Promise<ScanResult> {
   const authRateLimitFlagged = new Set<string>();
   const supabaseFlagged = new Set<string>();
   const corsStarFlagged = new Set<string>();
+  // Code-pattern checks: deduplicate globally (report once, first file wins)
+  let evalFlagged = false;
+  let sqlFlagged = false;
+  let passwordFlagged = false;
+  let jwtNoneFlagged = false;
 
   for (const file of filesToScan) {
     const content = await fetchFileContent(owner, repo, file.path);
@@ -503,8 +523,9 @@ export async function scanRepo(repoUrl: string): Promise<ScanResult> {
     const todos = content.match(/\b(TODO|FIXME|HACK|XXX)\b/gi);
     totalTodos += todos ? todos.length : 0;
 
-    // eval() usage
-    if (/\beval\s*\(/.test(content)) {
+    // eval() usage — skip test files, deduplicate globally
+    if (!evalFlagged && !isTestFile(file.path) && /\beval\s*\(/.test(content)) {
+      evalFlagged = true;
       issues.push({
         severity: "critical",
         category: "security",
@@ -529,8 +550,9 @@ export async function scanRepo(repoUrl: string): Promise<ScanResult> {
       });
     }
 
-    // SQL string concatenation
-    if (/query\s*[+=]\s*["'`].*\$\{|["'`]\s*\+\s*\w+.*WHERE/i.test(content)) {
+    // SQL string concatenation — skip test files, deduplicate globally
+    if (!sqlFlagged && !isTestFile(file.path) && /db\.query\s*\(\s*["'`][^"'`]*\$\{|db\.query\s*\(\s*["'`][^"'`]*"\s*\+/.test(content)) {
+      sqlFlagged = true;
       issues.push({
         severity: "critical",
         category: "security",
@@ -592,16 +614,20 @@ export async function scanRepo(repoUrl: string): Promise<ScanResult> {
       });
     }
 
-    // Password without bcrypt/argon2
+    // Password without bcrypt/argon2 — skip test files, deduplicate globally
     if (
+      !passwordFlagged &&
+      !isTestFile(file.path) &&
       /password/i.test(content) &&
       !content.includes("bcrypt") &&
       !content.includes("argon2") &&
       !content.includes("scrypt") &&
       !content.includes("pbkdf2") &&
-      /hash|store|save|insert/i.test(content) &&
+      !content.includes("hashpw") &&
+      /(db|insert|create|save|register|signup).*password|password.*(db|insert|create|save|register|signup)/i.test(content) &&
       file.path.match(/\.(ts|js|py|rb|php)$/)
     ) {
+      passwordFlagged = true;
       issues.push({
         severity: "critical",
         category: "auth",
@@ -613,8 +639,13 @@ export async function scanRepo(repoUrl: string): Promise<ScanResult> {
       });
     }
 
-    // JWT algorithm:none
-    if (/algorithm[s]?\s*:\s*["']none["']/i.test(content) || /alg[^"'\n]{0,10}["']none["']/i.test(content)) {
+    // JWT algorithm:none — deduplicate globally
+    if (
+      !jwtNoneFlagged &&
+      !isTestFile(file.path) &&
+      (/algorithm[s]?\s*:\s*["']none["']/i.test(content) || /alg[^"'\n]{0,10}["']none["']/i.test(content))
+    ) {
+      jwtNoneFlagged = true;
       issues.push({
         severity: "critical",
         category: "auth",
