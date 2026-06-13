@@ -471,7 +471,22 @@ export default function ScanPage() {
                 </div>
               </div>
 
-              {/* Zero issues */}
+              {/* Scan receipt — the credibility strip */}
+              <div className="mb-5 rounded-xl border-2 border-ink bg-night px-5 py-4 font-mono text-xs text-[#A8BBB0]">
+                <div className="flex flex-wrap gap-x-6 gap-y-1.5">
+                  <span><span className="text-[#4ADE80]">{result.checksPassed}</span> checks passed</span>
+                  <span><span className="text-[#FF7B72]">{result.issues.length}</span> issues found</span>
+                  <span><span className="text-cream">{result.filesChecked}</span> files read</span>
+                  <span><span className="text-cream">{result.linesChecked.toLocaleString()}</span> lines</span>
+                  <span><span className="text-cream">{result.rulesRun}</span> rules run</span>
+                  {result.languages.length > 0 && (
+                    <span>langs: <span className="text-cream">{result.languages.join(", ")}</span></span>
+                  )}
+                </div>
+                <p className="mt-2 text-[#5E7268]">
+                  Shepherd never runs your code and never keeps it. Every issue below shows the file and line it came from.
+                </p>
+              </div>
               {result.issues.length === 0 && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.96 }}
