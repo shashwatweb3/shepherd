@@ -264,7 +264,12 @@ export async function scanRepo(repoUrl: string): Promise<ScanResult> {
   const toScan = files
     .filter((f) => {
       const ext = f.path.split(".").pop()?.toLowerCase() ?? "";
-      const skip = /^(node_modules|\.git|dist|build|out|vendor|target|\.next)\//.test(f.path);
+      // Also skip rule-definition files — they contain the exact pattern strings
+      // (titles, descriptions, regexes) that the scanner searches for, causing
+      // every rule to falsely fire on the file that defines it.
+      const skip =
+        /^(node_modules|\.git|dist|build|out|vendor|target|\.next)\//.test(f.path) ||
+        /^lib\/rules\//.test(f.path);
       return SCANNABLE_EXT.has(ext) && !skip && (f.size ?? 0) < 200_000;
     })
     .slice(0, 120);

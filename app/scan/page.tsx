@@ -15,7 +15,7 @@ const SCAN_LINES = [
   "Consulting the elder sheep...",
   "Scanning for secrets you definitely didn't mean to push...",
   "Auditing your dependency choices...",
-  "Checking if eval() appears. Please no...",
+  "Checking for dangerous function calls...",
   "Looking for hardcoded passwords with one eye closed...",
   "Almost done. The sheep is thinking.",
 ];
