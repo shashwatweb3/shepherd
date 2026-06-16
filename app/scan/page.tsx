@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ScanResult, Issue, IssueSeverity, ScoreTier, TIER_LABELS, TIER_COLORS } from "@/lib/scanner";
+import { TIERS } from "@/lib/tiers";
 import VibeSheep from "@/components/mascots/VibeSheep";
 
 // ── Scanning status lines ──────────────────────────────────────────────────────
@@ -116,7 +117,7 @@ function IssueItem({ issue, index }: { issue: Issue; index: number }) {
     >
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-start gap-3 p-4 text-left hover:bg-[#FAFAF7] transition-colors"
+        className="w-full flex items-start gap-3 px-4 py-4 sm:py-3 text-left hover:bg-[#FAFAF7] transition-colors min-h-[56px]"
       >
         <span
           className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1.5 ${dotColors[issue.severity]} ${issue.severity === "critical" ? "animate-pulse" : ""}`}
@@ -321,7 +322,7 @@ export default function ScanPage() {
         aria-hidden
       />
 
-      <div className="relative max-w-2xl mx-auto px-6 py-14">
+      <div className="relative max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
         {/* Input */}
         <div className="mb-10">
           <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink mb-2">Survival Scan</h1>
@@ -369,32 +370,39 @@ export default function ScanPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
-              className="bg-white border border-[#E5E5E0] rounded-xl p-8 mb-8"
+              className="bg-white border border-[#E5E5E0] rounded-xl p-8 mb-8 text-center"
             >
+              {/* Sheep */}
+              <div className="flex justify-center mb-5">
+                <motion.div
+                  animate={prefersReduced ? {} : { y: [0, -6, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
+                >
+                  <VibeSheep mood="scanning" size={72} />
+                </motion.div>
+              </div>
+
+              {/* Status line */}
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={scanLineIndex}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-sm font-medium text-[#111] mb-5"
+                >
+                  {SCAN_LINES[scanLineIndex]}
+                </motion.p>
+              </AnimatePresence>
+
               {/* Progress bar */}
-              <div className="h-1.5 bg-[#E5E5E0] rounded-full overflow-hidden mb-6">
+              <div className="h-1.5 bg-[#E5E5E0] rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-[#16A34A] rounded-full"
                   animate={{ width: ["5%", "85%"] }}
                   transition={{ duration: 12, ease: "easeInOut" }}
                 />
-              </div>
-
-              {/* Status line */}
-              <div className="flex items-center gap-3">
-                <VibeSheep mood="scanning" size={40} className="flex-shrink-0" />
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={scanLineIndex}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.3 }}
-                    className="text-sm text-[#6B7280]"
-                  >
-                    {SCAN_LINES[scanLineIndex]}
-                  </motion.span>
-                </AnimatePresence>
               </div>
             </motion.div>
           )}
@@ -407,10 +415,13 @@ export default function ScanPage() {
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="bg-[#FEF2F2] border border-[#FECACA] rounded-xl p-5 mb-8 text-[#DC2626] text-sm"
+              className="bg-[#FEF2F2] border border-[#FECACA] rounded-xl p-5 mb-8 flex items-start gap-3"
             >
-              <div className="font-medium mb-1">Something went wrong</div>
-              <div className="text-[#B91C1C]">{errorMsg}</div>
+              <VibeSheep mood="nervous" size={36} className="flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="font-medium text-[#DC2626] mb-1">Something went wrong</div>
+                <div className="text-sm text-[#B91C1C]">{errorMsg}</div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -425,49 +436,67 @@ export default function ScanPage() {
               transition={{ duration: 0.4 }}
             >
               {/* Score card */}
-              <div className="bg-white border border-[#E5E5E0] rounded-xl p-8 mb-5 flex flex-col md:flex-row items-center gap-8">
-                <ScoreRing score={result.score} tier={result.tier} animate={true} />
-                <div className="flex-1 text-center md:text-left">
+              <div className="bg-white border border-[#E5E5E0] rounded-xl p-6 sm:p-8 mb-5">
+                {/* Top: ring + sheep side by side */}
+                <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 mb-5">
+                  <ScoreRing score={result.score} tier={result.tier} animate={true} />
+                  {/* Tier sheep — pops in with spring */}
                   <motion.div
-                    initial={prefersReduced ? {} : { scale: 0.7, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 400, delay: 0.3 }}
-                    className="inline-block px-3 py-1 rounded-full text-sm font-semibold mb-3"
-                    style={{
-                      background: `${TIER_COLORS[result.tier]}15`,
-                      color: TIER_COLORS[result.tier],
-                      border: `1.5px solid ${TIER_COLORS[result.tier]}40`,
-                    }}
+                    initial={prefersReduced ? {} : { scale: 0, rotate: -15, opacity: 0 }}
+                    animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.5 }}
+                    className="flex-shrink-0"
                   >
-                    {TIER_LABELS[result.tier]}
+                    <VibeSheep mood={TIERS[result.tier].mood} size={88} />
                   </motion.div>
-                  <h2 className="text-xl font-bold text-[#111] mb-1">Survival Score</h2>
-                  <p className="text-[#6B7280] text-sm mb-4 font-mono">{result.repo}</p>
-                  <div className="flex flex-wrap gap-4 text-sm justify-center md:justify-start mb-4">
-                    <span className="text-[#DC2626] font-medium">{criticals.length} critical</span>
-                    <span className="text-[#D97706] font-medium">{mediums.length} medium</span>
-                    <span className="text-[#6B7280] font-medium">{lows.length} low</span>
+                  {/* Labels */}
+                  <div className="flex-1 text-center sm:text-left">
+                    <motion.div
+                      initial={prefersReduced ? {} : { scale: 0.7, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 400, delay: 0.3 }}
+                      className="inline-block px-3 py-1 rounded-full text-sm font-semibold mb-2"
+                      style={{
+                        background: `${TIER_COLORS[result.tier]}15`,
+                        color: TIER_COLORS[result.tier],
+                        border: `1.5px solid ${TIER_COLORS[result.tier]}40`,
+                      }}
+                    >
+                      {TIER_LABELS[result.tier]}
+                    </motion.div>
+                    <h2 className="text-xl font-bold text-[#111] mb-1">Survival Score</h2>
+                    <p className="text-[#9CA3AF] text-xs font-mono mb-2 truncate max-w-[220px] sm:max-w-none">{result.repo}</p>
+                    <p className="text-sm text-[#6B7280] italic">{TIERS[result.tier].roast}</p>
                   </div>
-                  <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                </div>
+
+                {/* Stats row */}
+                <div className="flex flex-wrap gap-3 text-sm mb-4">
+                  <span className="bg-[#FEF2F2] text-[#DC2626] font-medium px-2.5 py-1 rounded-md">{criticals.length} critical</span>
+                  <span className="bg-[#FFFBEB] text-[#D97706] font-medium px-2.5 py-1 rounded-md">{mediums.length} medium</span>
+                  <span className="bg-[#F9FAFB] text-[#6B7280] font-medium px-2.5 py-1 rounded-md">{lows.length} low</span>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex flex-wrap gap-2">
+                  <motion.button
+                    onClick={copyReport}
+                    whileHover={prefersReduced ? {} : { scale: 1.03 }}
+                    whileTap={prefersReduced ? {} : { scale: 0.97 }}
+                    className="text-xs border border-[#E5E5E0] px-3 py-2 rounded-md hover:bg-[#F5F5F0] transition-colors text-[#6B7280] min-h-[36px]"
+                  >
+                    {copied ? "✓ Copied!" : "📋 Copy report"}
+                  </motion.button>
+                  {shareUrl && (
                     <motion.button
-                      onClick={copyReport}
+                      onClick={() => navigator.clipboard.writeText(shareUrl)}
                       whileHover={prefersReduced ? {} : { scale: 1.03 }}
                       whileTap={prefersReduced ? {} : { scale: 0.97 }}
-                      className="text-xs border border-[#E5E5E0] px-3 py-1.5 rounded-md hover:bg-[#F5F5F0] transition-colors text-[#6B7280]"
+                      className="text-xs border border-[#E5E5E0] px-3 py-2 rounded-md hover:bg-[#F5F5F0] transition-colors text-[#6B7280] min-h-[36px]"
                     >
-                      {copied ? "✓ Copied!" : "📋 Copy full report (markdown)"}
+                      🔗 Share score
                     </motion.button>
-                    {shareUrl && (
-                      <motion.button
-                        onClick={() => navigator.clipboard.writeText(shareUrl)}
-                        whileHover={prefersReduced ? {} : { scale: 1.03 }}
-                        whileTap={prefersReduced ? {} : { scale: 0.97 }}
-                        className="text-xs border border-[#E5E5E0] px-3 py-1.5 rounded-md hover:bg-[#F5F5F0] transition-colors text-[#6B7280]"
-                      >
-                        🔗 Share score
-                      </motion.button>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
 
@@ -493,7 +522,9 @@ export default function ScanPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   className="bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl p-8 text-center mb-5"
                 >
-                  <div className="text-4xl mb-3">🎉</div>
+                  <div className="flex justify-center mb-3">
+                    <VibeSheep mood="crowned" size={72} />
+                  </div>
                   <div className="font-bold text-[#16A34A] text-lg mb-1">Suspiciously clean.</div>
                   <div className="text-sm text-[#6B7280]">Are you even a vibe coder? No issues found across {result.filesChecked} files. We&apos;re impressed and slightly suspicious.</div>
                 </motion.div>
@@ -576,26 +607,24 @@ export default function ScanPage() {
                 const prev = history.find((p) => p.repo === h.repo && p.scannedAt < h.scannedAt);
                 const delta = prev ? h.score - prev.score : null;
                 return (
-                  <li key={h.scannedAt} className="flex items-center justify-between bg-white border border-[#E5E5E0] rounded-lg px-4 py-3">
+                  <li key={h.scannedAt}>
                     <button
                       onClick={() => { setUrl(`https://github.com/${h.repo}`); }}
-                      className="font-mono text-sm text-[#111] hover:text-[#16A34A] transition-colors text-left truncate"
+                      className="w-full flex items-center justify-between bg-white border border-[#E5E5E0] rounded-lg px-4 py-4 hover:bg-[#FAFAF7] hover:border-[#D1D5DB] transition-colors min-h-[56px] text-left gap-3"
                     >
-                      {h.repo}
-                    </button>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {delta !== null && (
-                        <span className={`text-xs font-medium ${delta > 0 ? "text-[#16A34A]" : delta < 0 ? "text-[#DC2626]" : "text-[#9CA3AF]"}`}>
-                          {delta > 0 ? `↑${delta}` : delta < 0 ? `↓${Math.abs(delta)}` : "—"}
+                      <span className="font-mono text-sm text-[#111] truncate flex-1">{h.repo}</span>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {delta !== null && (
+                          <span className={`text-xs font-medium ${delta > 0 ? "text-[#16A34A]" : delta < 0 ? "text-[#DC2626]" : "text-[#9CA3AF]"}`}>
+                            {delta > 0 ? `↑${delta}` : delta < 0 ? `↓${Math.abs(delta)}` : "—"}
+                          </span>
+                        )}
+                        <span className="font-bold text-sm" style={{ color: TIER_COLORS[h.tier] }}>
+                          {h.score}
                         </span>
-                      )}
-                      <span
-                        className="font-bold text-sm"
-                        style={{ color: TIER_COLORS[h.tier] }}
-                      >
-                        {h.score}
-                      </span>
-                    </div>
+                        <span className="text-[#9CA3AF] text-xs">→</span>
+                      </div>
+                    </button>
                   </li>
                 );
               })}
