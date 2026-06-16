@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { scanRepo } from "@/lib/scanner";
 
-// In-memory rate limiter (resets on cold start — good enough for edge/serverless)
-// For persistent rate limiting, swap with @upstash/ratelimit
+// In-memory rate limiter (resets on cold start — good enough for serverless)
+// For persistent rate limiting swap with @upstash/ratelimit
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT = 20;
 const WINDOW_MS = 60 * 60 * 1000; // 1 hour
@@ -24,10 +24,40 @@ function checkRateLimit(ip: string): { allowed: boolean; remaining: number; rese
   return { allowed: true, remaining: RATE_LIMIT - entry.count, resetAt: entry.resetAt };
 }
 
+/** Validate that the input is a real github.com repo URL — prevents SSRF via crafted hostnames */
+function parseGitHubUrl(raw: string): { ok: true; url: string } | { ok: false; error: string } {
+  let parsed: URL;
+  try {
+    parsed = new URL(raw.trim());
+  } catch {
+    return { ok: false, error: "That doesn't look like a valid URL." };
+  }
+
+  // Exact hostname match — prevents bypass via github.com.evil.com or evil.com/github.com
+  if (parsed.hostname !== "github.com") {
+    return { ok: false, error: "Only GitHub repositories are supported right now. Paste a github.com URL." };
+  }
+
+  // Must have at least /owner/repo path segments
+  const parts = parsed.pathname.replace(/^\/|\/$/g, "").split("/");
+  if (parts.length < 2 || !parts[0] || !parts[1]) {
+    return { ok: false, error: "Paste the full repo URL, e.g. https://github.com/owner/repo" };
+  }
+
+  return { ok: true, url: raw.trim() };
+}
+
 export async function POST(req: NextRequest) {
-  // Get client IP
+  // Reject oversized bodies early (a repo URL should never exceed 2 KB)
+  const contentLength = Number(req.headers.get("content-length") ?? "0");
+  if (contentLength > 2048) {
+    return NextResponse.json({ error: "Request body too large." }, { status: 413 });
+  }
+
+  // Get client IP — use the first non-private entry from x-forwarded-for
+  const forwarded = req.headers.get("x-forwarded-for");
   const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    forwarded?.split(",")[0].trim() ||
     req.headers.get("x-real-ip") ||
     "unknown";
 
@@ -51,23 +81,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  let body: unknown;
   try {
-    const body = await req.json();
-    const { repoUrl } = body as { repoUrl?: string };
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
+  }
 
-    if (!repoUrl || typeof repoUrl !== "string") {
-      return NextResponse.json({ error: "repoUrl is required" }, { status: 400 });
-    }
+  const { repoUrl } = (body ?? {}) as { repoUrl?: unknown };
 
-    const trimmed = repoUrl.trim();
-    if (!trimmed.includes("github.com")) {
-      return NextResponse.json(
-        { error: "Only GitHub repositories are supported right now. Paste a github.com URL." },
-        { status: 400 }
-      );
-    }
+  if (!repoUrl || typeof repoUrl !== "string") {
+    return NextResponse.json({ error: "repoUrl is required and must be a string." }, { status: 400 });
+  }
 
-    const result = await scanRepo(trimmed);
+  const validation = parseGitHubUrl(repoUrl);
+  if (!validation.ok) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
+  }
+
+  try {
+    const result = await scanRepo(validation.url);
     return NextResponse.json(result, {
       headers: {
         "X-RateLimit-Limit": String(RATE_LIMIT),
@@ -76,7 +109,10 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err) {
+    // Known user-facing errors (bad repo, private, rate-limited by GitHub) → 400
+    // Unexpected internal errors → 500
     const message = err instanceof Error ? err.message : "Something went wrong. The sheep are confused.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    const isUserError = /Could not find|private|GitHub returned|does not look like/i.test(message);
+    return NextResponse.json({ error: message }, { status: isUserError ? 400 : 500 });
   }
 }
