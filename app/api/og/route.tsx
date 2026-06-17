@@ -7,18 +7,15 @@ export const runtime = "edge";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const score = Math.min(100, Math.max(0, parseInt(searchParams.get("score") ?? "50", 10)));
-  const repo = (searchParams.get("repo") ?? "your-app").slice(0, 40);
+  const repo = (searchParams.get("repo") ?? "your-app").slice(0, 44);
   const tier = getTier(score);
-
-  const color =
-    score >= 70 ? "#16A34A" : score >= 40 ? "#D97706" : "#DC2626";
-  const bgAccent =
-    score >= 70 ? "#F0FDF4" : score >= 40 ? "#FFFBEB" : "#FEF2F2";
-  const borderColor =
-    score >= 70 ? "#BBF7D0" : score >= 40 ? "#FDE68A" : "#FECACA";
-
+  const color = TIERS[tier].color;
   const tierLabel = TIERS[tier].label;
   const roastLine = TIERS[tier].roast;
+
+  // sheep face that matches the tier mood
+  const sheepEyes = score < 30 ? "x x" : score >= 90 ? "^ ^" : "o o";
+  const crown = score >= 90;
 
   return new ImageResponse(
     (
@@ -28,80 +25,91 @@ export async function GET(req: NextRequest) {
           flexDirection: "column",
           width: "100%",
           height: "100%",
-          background: "#FAFAF7",
-          fontFamily: "sans-serif",
-          padding: "64px",
+          background: "#0E1512",
+          fontFamily: "monospace",
+          padding: "56px 64px",
           position: "relative",
         }}
       >
-        {/* Top bar */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "48px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span style={{ fontSize: "40px" }}>🐑</span>
-            <span style={{ fontSize: "26px", fontWeight: "700", color: "#111", letterSpacing: "-0.5px" }}>Shepherd</span>
+        {/* dotted ground line */}
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: "120px", height: "2px", background: "#22302A", display: "flex" }} />
+
+        {/* top bar: terminal prompt */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <div style={{ width: "14px", height: "14px", borderRadius: "7px", background: "#FF5F57", display: "flex" }} />
+              <div style={{ width: "14px", height: "14px", borderRadius: "7px", background: "#FEBC2E", display: "flex" }} />
+              <div style={{ width: "14px", height: "14px", borderRadius: "7px", background: "#28C840", display: "flex" }} />
+            </div>
+            <span style={{ fontSize: "22px", color: "#5E7268" }}>shepherd scan</span>
           </div>
-          <div style={{ display: "flex", fontSize: "16px", color: "#9CA3AF" }}>
-            shepherd-ivory.vercel.app
-          </div>
+          <span style={{ fontSize: "20px", color: "#5E7268" }}>shepherd-ivory.vercel.app</span>
         </div>
 
-        {/* Main content */}
-        <div style={{ display: "flex", flex: 1, gap: "48px", alignItems: "center" }}>
-          {/* Score circle */}
+        <div style={{ display: "flex", fontSize: "24px", color: "#4ADE80", marginBottom: "36px" }}>
+          $ shepherd scan {repo}
+        </div>
+
+        {/* main row */}
+        <div style={{ display: "flex", flex: 1, gap: "56px", alignItems: "center" }}>
+          {/* score ring */}
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              width: "260px",
-              height: "260px",
-              borderRadius: "130px",
-              background: bgAccent,
-              border: `6px solid ${borderColor}`,
+              width: "280px",
+              height: "280px",
+              borderRadius: "140px",
+              background: "#16201B",
+              border: `10px solid ${color}`,
               flexShrink: 0,
             }}
           >
-            <div style={{ display: "flex", fontSize: "88px", fontWeight: "800", color: color, lineHeight: 1 }}>
-              {score}
-            </div>
-            <div style={{ display: "flex", fontSize: "28px", color: "#9CA3AF", marginTop: "2px" }}>/100</div>
+            <div style={{ display: "flex", fontSize: "104px", fontWeight: 800, color: "#FAF8F2", lineHeight: 1 }}>{score}</div>
+            <div style={{ display: "flex", fontSize: "26px", color: "#5E7268" }}>/ 100</div>
           </div>
 
-          {/* Right side */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px", flex: 1 }}>
-            <div
-              style={{
-                display: "flex",
-                background: bgAccent,
-                border: `2px solid ${borderColor}`,
-                borderRadius: "12px",
-                padding: "10px 20px",
-                width: "fit-content",
-              }}
-            >
-              <span style={{ fontSize: "20px", fontWeight: "700", color: color }}>{tierLabel}</span>
+          {/* right column */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "18px", flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              {/* tiny sheep */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                {crown && <div style={{ display: "flex", fontSize: "22px", color: "#EAB308" }}>♕</div>}
+                <div style={{ display: "flex", fontSize: "30px", color: "#FAF8F2" }}>({sheepEyes})</div>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  background: color,
+                  borderRadius: "12px",
+                  padding: "8px 20px",
+                }}
+              >
+                <span style={{ fontSize: "26px", fontWeight: 800, color: "#0E1512" }}>{tierLabel}</span>
+              </div>
             </div>
-            <div style={{ display: "flex", fontSize: "36px", fontWeight: "800", color: "#111", lineHeight: 1.2, letterSpacing: "-1px" }}>
+
+            <div style={{ display: "flex", fontSize: "52px", fontWeight: 800, color: "#FAF8F2", lineHeight: 1.05, letterSpacing: "-1px", fontFamily: "sans-serif" }}>
               Survival Score
             </div>
-            <div style={{ display: "flex", fontSize: "20px", color: "#6B7280", fontFamily: "monospace" }}>
-              {repo}
-            </div>
-            <div style={{ display: "flex", fontSize: "20px", color: "#4B5563", marginTop: "8px", fontStyle: "italic" }}>
+
+            <div style={{ display: "flex", fontSize: "26px", color: "#A8BBB0", marginTop: "6px", fontStyle: "italic", fontFamily: "sans-serif" }}>
               &ldquo;{roastLine}&rdquo;
             </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "32px" }}>
-          <div style={{ display: "flex", fontSize: "16px", color: "#9CA3AF" }}>
+        {/* footer */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: "20px", color: "#A8BBB0", fontFamily: "sans-serif" }}>
             You vibe-coded it. Shepherd keeps it alive.
-          </div>
-          <div style={{ display: "flex", fontSize: "16px", color: "#9CA3AF" }}>
-            Scan your repo free at shepherd-ivory.vercel.app/scan
-          </div>
+          </span>
+          <span style={{ fontSize: "20px", color: "#16A34A" }}>
+            scan yours free, no login
+          </span>
         </div>
       </div>
     ),
