@@ -21,9 +21,22 @@ export default function Footer() {
           </div>
         </div>
 
-        <p className="mt-8 font-mono text-xs text-ink-faint">
-          shepherd · static analysis for vibe-coded apps · we never run your code, we never store it
-        </p>
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-2">
+          <p className="font-mono text-xs text-ink-faint">
+            shepherd · static analysis for vibe-coded apps · we never run your code, we never store it
+          </p>
+          <p className="font-mono text-xs text-ink-faint">
+            built by{" "}
+            <a
+              href="https://x.com/Shashwat_web3"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-ink transition-colors hover:text-pasture"
+            >
+              @Shashwat_web3
+            </a>
+          </p>
+        </div>
       </div>
     </footer>
   );
