@@ -26,7 +26,7 @@ export default function Hero() {
         className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-wool-line"
       />
 
-      <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-14 sm:px-8 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:pt-20">
+      <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-10 sm:px-8 sm:pb-20 sm:pt-14 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:pt-20">
         {/* ---- left: the words ---- */}
         <div>
           <motion.p {...fadeUp(0)} className="eyebrow">
@@ -35,7 +35,7 @@ export default function Hero() {
 
           <motion.h1
             {...fadeUp(0.08)}
-            className="mt-5 font-display text-[2.9rem] font-extrabold leading-[0.98] tracking-tight text-ink sm:text-6xl lg:text-[4.2rem]"
+            className="mt-5 font-display text-[2rem] font-extrabold leading-[1.05] tracking-tight text-ink sm:text-[2.9rem] sm:leading-[0.98] lg:text-[4.2rem]"
           >
             You vibe-coded it.
             <span className="block text-pasture">Shepherd keeps it alive.</span>
@@ -50,14 +50,14 @@ export default function Hero() {
             you can paste straight back into your AI.
           </motion.p>
 
-          <motion.div {...fadeUp(0.24)} className="mt-8 flex flex-wrap items-center gap-4">
+          <motion.div {...fadeUp(0.24)} className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
             <Link
               href="/scan"
-              className="rounded-xl border-2 border-ink bg-pasture px-7 py-3.5 font-display text-lg font-bold text-white shadow-lift transition-all hover:-translate-y-0.5 hover:shadow-[0_5px_0_0_#141414] active:translate-y-0 active:shadow-lift motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+              className="rounded-xl border-2 border-ink bg-pasture px-7 py-4 text-center font-display text-lg font-bold text-white shadow-lift transition-all hover:-translate-y-0.5 hover:shadow-[0_5px_0_0_#141414] active:translate-y-0 active:shadow-lift motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:py-3.5"
             >
               Scan my app →
             </Link>
-            <span className="font-mono text-xs text-ink-faint">
+            <span className="text-center font-mono text-xs text-ink-faint sm:text-left">
               public repos · ~10s · nothing stored
             </span>
           </motion.div>
@@ -78,12 +78,17 @@ export default function Hero() {
 
         {/* ---- right: the demo, with Vibe perched on the window ---- */}
         <motion.div {...fadeUp(0.18)} className="relative mt-6 lg:mt-0">
-          {/* Vibe sits on top of the terminal chrome, facing the output */}
-          <div className="absolute -top-[74px] right-8 z-10 -scale-x-100">
+          {/* Vibe sits on top of the terminal chrome — hidden on mobile to avoid overlap */}
+          <div className="absolute -top-[74px] right-8 z-10 -scale-x-100 hidden sm:block">
             <VibeSheep mood="nervous" size={110} />
           </div>
+          {/* Mobile: smaller sheep below eyebrow, above terminal */}
+          <div className="mb-3 flex items-center gap-2 sm:hidden">
+            <VibeSheep mood="nervous" size={36} />
+            <span className="font-mono text-xs text-ink-faint">Vibe is nervous. Vibe should be.</span>
+          </div>
           <TerminalDemo />
-          <p className="mt-3 text-center font-mono text-xs text-ink-faint">
+          <p className="mt-3 hidden text-center font-mono text-xs text-ink-faint sm:block">
             this is Vibe&apos;s app. Vibe is nervous. Vibe should be.
           </p>
         </motion.div>

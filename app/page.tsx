@@ -40,10 +40,8 @@ function DoomLoop() {
           <p className="font-mono text-sm text-[#4ADE80]">
             <span className="opacity-60">$ </span>the-problem
           </p>
-          <h2 className="mt-5 font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-            Night falls on every
-            <br />
-            vibe-coded app.
+          <h2 className="mt-5 font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+            Night falls on every vibe-coded app.
           </h2>
           <p className="mt-6 max-w-md text-lg leading-relaxed text-[#A8BBB0]">
             You shipped fast. It worked. Then something broke — and every AI
@@ -189,16 +187,19 @@ function TierRuler() {
           {TIER_LIST.map((tier, i) => (
             <Reveal key={tier.label} delay={i * 0.06}>
               <div
-                className={`grid grid-cols-[64px_56px_1fr] items-center gap-4 px-4 py-4 sm:grid-cols-[90px_64px_240px_1fr] sm:px-6 ${
+                className={`flex items-center gap-3 px-4 py-4 sm:grid sm:grid-cols-[90px_64px_240px_1fr] sm:gap-4 sm:px-6 ${
                   i > 0 ? "border-t border-wool-line" : ""
                 }`}
               >
-                <span className="font-mono text-xs text-ink-faint">{TIER_RANGES[i]}</span>
-                <VibeSheep mood={tier.mood} size={56} />
-                <span className="font-display text-base font-bold sm:text-lg" style={{ color: tier.color }}>
-                  {tier.label}
-                </span>
-                <span className="col-span-3 text-sm text-ink-soft sm:col-span-1">{tier.roast}</span>
+                <span className="w-14 flex-shrink-0 font-mono text-xs text-ink-faint sm:w-auto">{TIER_RANGES[i]}</span>
+                <VibeSheep mood={tier.mood} size={44} className="flex-shrink-0 sm:hidden" />
+                <VibeSheep mood={tier.mood} size={56} className="hidden sm:block" />
+                <div className="flex min-w-0 flex-1 flex-col sm:contents">
+                  <span className="font-display text-sm font-bold sm:text-lg" style={{ color: tier.color }}>
+                    {tier.label}
+                  </span>
+                  <span className="text-xs text-ink-soft sm:text-sm">{tier.roast}</span>
+                </div>
               </div>
             </Reveal>
           ))}
@@ -262,7 +263,7 @@ function WhyFree() {
               </span>
             </div>
           ) : (
-            <form onSubmit={handleNotify} className="mt-6 flex gap-3">
+            <form onSubmit={handleNotify} className="mt-6 flex flex-col gap-3 sm:flex-row">
               <input
                 type="email"
                 required
@@ -274,7 +275,7 @@ function WhyFree() {
               <button
                 type="submit"
                 disabled={loading}
-                className="rounded-xl border-2 border-ink bg-ink px-5 py-3 font-display text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-pasture disabled:opacity-50 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                className="rounded-xl border-2 border-ink bg-ink px-5 py-3.5 font-display text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:bg-pasture disabled:opacity-50 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:py-3"
               >
                 {loading ? "..." : "Notify me"}
               </button>

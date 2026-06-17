@@ -90,7 +90,7 @@ export default function TerminalDemo() {
 
       {/* output */}
       <div
-        className="h-[280px] space-y-1.5 overflow-hidden p-4 font-mono text-[13px] leading-relaxed sm:h-[300px] sm:p-5"
+        className="h-[240px] space-y-1.5 overflow-hidden p-3 font-mono text-[11px] leading-relaxed sm:h-[300px] sm:p-5 sm:text-[13px]"
         aria-label="Demo of a Shepherd scan finding 3 issues and scoring 38 out of 100"
       >
         {lines.map((line, i) => (

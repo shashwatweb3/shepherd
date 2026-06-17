@@ -55,13 +55,13 @@ export default function WallPage() {
   return (
     <div className="min-h-screen bg-[#FAFAF7]">
 
-      <div className="max-w-3xl mx-auto px-6 py-16">
-        <div className="mb-12">
-          <div className="mb-6">
-            <DevShepherd size={100} />
+      <div className="max-w-3xl mx-auto px-4 py-12 sm:px-6 sm:py-16">
+        <div className="mb-10 sm:mb-12">
+          <div className="mb-4 sm:mb-6">
+            <DevShepherd size={80} />
           </div>
           <p className="eyebrow mb-3">Community</p>
-          <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink mb-3">Wall of Shame... I mean, Fame</h1>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink mb-3 sm:text-4xl">Wall of Shame... I mean, Fame</h1>
           <p className="text-[#6B7280]">
             Anonymous scores from recent scans. Repos are hidden. Only vibes are shown.
             <br />
@@ -94,19 +94,21 @@ export default function WallPage() {
             {entries.map((entry) => (
               <div
                 key={entry.id}
-                className="bg-white border border-[#E5E5E0] rounded-xl p-5 flex items-center gap-4"
+                className="bg-white border border-[#E5E5E0] rounded-xl p-4 sm:p-5 flex items-center gap-3 sm:gap-4"
               >
                 <ScoreBadge score={entry.score} tier={entry.tier} />
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-[#111] text-sm" style={{ color: TIER_COLORS[entry.tier] }}>
+                  <div className="font-medium text-sm truncate" style={{ color: TIER_COLORS[entry.tier] }}>
                     {entry.tierLabel}
                   </div>
-                  <div className="text-sm text-[#6B7280] mt-0.5">
-                    {entry.issueCount} issue{entry.issueCount !== 1 ? "s" : ""} ·{" "}
-                    Top category: {CATEGORY_LABELS[entry.topCategory] ?? entry.topCategory}
+                  <div className="text-xs text-[#6B7280] mt-0.5 truncate">
+                    {entry.issueCount} issue{entry.issueCount !== 1 ? "s" : ""} · {CATEGORY_LABELS[entry.topCategory] ?? entry.topCategory}
+                  </div>
+                  <div className="text-xs text-[#9CA3AF] mt-0.5 sm:hidden">
+                    {new Date(entry.addedAt).toLocaleDateString()}
                   </div>
                 </div>
-                <div className="text-xs text-[#9CA3AF] flex-shrink-0">
+                <div className="text-xs text-[#9CA3AF] flex-shrink-0 hidden sm:block">
                   {new Date(entry.addedAt).toLocaleDateString()}
                 </div>
               </div>

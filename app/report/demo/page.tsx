@@ -43,19 +43,19 @@ export default function DemoReport() {
   return (
     <div className="min-h-screen bg-[#FAFAF7]">
 
-      <div className="max-w-2xl mx-auto px-6 py-16">
+      <div className="max-w-2xl mx-auto px-4 py-12 sm:px-6 sm:py-16">
         <div className="inline-flex items-center gap-2 bg-[#F0FDF4] text-[#16A34A] text-xs font-medium px-3 py-1 rounded-full border border-[#BBF7D0] mb-6">
           Sample Report — myapp/backend
         </div>
 
-        <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink mb-1">Weekly Founder Report</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink mb-1 sm:text-4xl">Weekly Founder Report</h1>
         <p className="text-sm text-[#9CA3AF] mb-10">Week of June 9–16, 2025</p>
 
         {/* Score */}
-        <div className="bg-white border border-[#E5E5E0] rounded-xl p-8 mb-5 flex items-center gap-6">
-          <div className="w-24 h-24 rounded-full flex items-center justify-center border-4 border-[#16A34A] flex-shrink-0">
+        <div className="bg-white border border-[#E5E5E0] rounded-xl p-6 mb-5 flex flex-col items-center gap-4 text-center sm:flex-row sm:gap-6 sm:text-left sm:p-8">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-[#16A34A] flex-shrink-0 sm:w-24 sm:h-24">
             <div className="text-center">
-              <div className="font-display text-4xl font-extrabold tracking-tight text-ink">92</div>
+              <div className="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">92</div>
               <div className="text-xs text-[#6B7280]">/100</div>
             </div>
           </div>

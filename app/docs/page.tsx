@@ -74,14 +74,34 @@ export default function DocsPage() {
   });
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-14 sm:px-8">
-      <div className="mb-12 flex items-end gap-4">
-        <VibeSheep mood="happy" size={64} />
+    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-8 sm:py-14">
+      <div className="mb-10 flex items-end gap-3 sm:mb-12 sm:gap-4">
+        <VibeSheep mood="happy" size={48} className="flex-shrink-0 sm:hidden" />
+        <VibeSheep mood="happy" size={64} className="hidden sm:block flex-shrink-0" />
         <div>
           <p className="eyebrow mb-2">docs</p>
-          <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink">
+          <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink sm:text-4xl">
             How Shepherd works
           </h1>
+        </div>
+      </div>
+
+      {/* Mobile section nav — horizontal scrollable pills */}
+      <div className="mb-8 -mx-4 overflow-x-auto px-4 lg:hidden">
+        <div className="flex gap-2 w-max">
+          {SECTIONS.map((s) => (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              className={`whitespace-nowrap rounded-full px-4 py-2 font-mono text-xs transition-colors ${
+                active === s.id
+                  ? "bg-ink text-white"
+                  : "border border-wool-line bg-cream text-ink-faint hover:text-ink"
+              }`}
+            >
+              {s.label}
+            </a>
+          ))}
         </div>
       </div>
 
@@ -180,16 +200,19 @@ score = whatever is left (never below 0)`}</pre>
             <div className="mt-5 space-y-3">
               {filtered.map((r) => (
                 <div key={r.id} className="rounded-xl border-2 border-ink bg-cream p-4 shadow-card">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={`rounded-md px-2 py-0.5 font-mono text-xs font-bold text-white ${
-                        r.severity === "critical" ? "bg-danger" : r.severity === "medium" ? "bg-amber" : "bg-ink-faint"
-                      }`}
-                    >
-                      {r.severity}
-                    </span>
+                  <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`rounded-md px-2 py-0.5 font-mono text-xs font-bold text-white ${
+                          r.severity === "critical" ? "bg-danger" : r.severity === "medium" ? "bg-amber" : "bg-ink-faint"
+                        }`}
+                      >
+                        {r.severity}
+                      </span>
+                      <span className="font-mono text-xs text-ink-faint sm:hidden">{r.category}</span>
+                    </div>
                     <span className="font-display font-bold text-ink">{r.title}</span>
-                    <span className="ml-auto font-mono text-xs text-ink-faint">{r.category}</span>
+                    <span className="ml-auto hidden font-mono text-xs text-ink-faint sm:inline">{r.category}</span>
                   </div>
                   <p className="mt-2 text-sm leading-relaxed text-ink-soft">{r.plain}</p>
                   <div className="mt-2 flex flex-wrap gap-x-4 font-mono text-xs text-ink-faint">
